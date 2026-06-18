@@ -386,37 +386,19 @@ async function sincronizarTodo(){
   if(!D.length){ alert('No hay datos para sincronizar.'); return; }
   setSyncUI('loading');
   try {
-    /* Verificar cuáles recibos ya existen, en LOTES (evita URL demasiado larga) */
-    var recibosList = D.map(function(d){ return d.Recibo; });
-    var existentes = {};
-    var LOTE = 150;
-    for(var i=0; i<recibosList.length; i+=LOTE){
-      var lote = recibosList.slice(i, i+LOTE);
-      var query = lote.map(function(x){ return '"'+x+'"'; }).join(',');
-      var r = await supaFetch('kopi_transacciones?select=recibo&recibo=in.('+query+')', {
-        headers:{ 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY }
-      });
-      if(!r.ok){
-        var errTxt = await r.text();
-        throw new Error('Verificación existentes (lote '+(i/LOTE+1)+'): HTTP '+r.status+' '+errTxt);
-      }
-      var existing = await r.json();
-      existing.forEach(function(tx){ existentes[tx.recibo]=true; });
-    }
-    var nuevos = D.filter(function(d){ return !existentes[d.Recibo]; });
-    if(nuevos.length === 0){
-      setSyncUI('ok', 'Todo ya sincronizado');
-      return;
-    }
-    /* Guardar en lotes también, para no exceder límites de payload */
+    /* El upsert (on_conflict=recibo + merge-duplicates) ya maneja
+       duplicados a nivel de base de datos, así que enviamos todo
+       directamente en lotes, sin necesitar un paso previo de
+       "verificar existentes" (esa verificación por URL in.(...) era
+       poco confiable y causaba falsos "todo ya sincronizado"). */
     var GUARDAR_LOTE = 300;
     var totalGuardados = 0;
-    for(var j=0; j<nuevos.length; j+=GUARDAR_LOTE){
-      var sublote = nuevos.slice(j, j+GUARDAR_LOTE);
+    for(var j=0; j<D.length; j+=GUARDAR_LOTE){
+      var sublote = D.slice(j, j+GUARDAR_LOTE);
       await guardarEnSupabase(sublote, true);
       totalGuardados += sublote.length;
     }
-    setSyncUI('ok', totalGuardados+' nuevos enviados');
+    setSyncUI('ok', totalGuardados+' registros sincronizados');
   } catch(e){
     setSyncUI('error', e.message);
     console.error('Sync error', e);
