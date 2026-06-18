@@ -773,7 +773,7 @@ function calcBQ(datos){
   /* Contar bebidas = número de recibos con TipoTx 'bebida'
      (igual a lo que muestra el Resumen al filtrar tipo=bebida).
      Recibos mixtos no se cuentan como bebida para el bono. */
-  var b=datos.filter(function(d){return d.TipoTx==='bebida';}).length;
+  var b=0;datos.forEach(function(d){(d.Items||[]).forEach(function(it){if(it.tipo==='bebida')b+=it.cant;});});
   var bv=0,bb=0;
   METAS.forEach(function(m){
     if(m.t==='v'&&v>=m.val)bv+=m.b;
