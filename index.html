@@ -91,7 +91,6 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <div style="display:flex;gap:6px">
         <button onclick="cargarDesdeSupabase()" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.5);color:white;padding:6px 11px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700" title="Cargar registros desde Supabase">&#x2B07; DB</button>
-        <button onclick="sincronizarTodo()" style="background:rgba(37,211,102,0.25);border:2px solid rgba(37,211,102,0.7);color:white;padding:6px 11px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700" title="Guardar datos locales en Supabase">&#x2B06; Sync</button>
       </div>
       <span id="syncStatus" class="sync-badge sync-idle">&#x26A1; Supabase</span>
     </div>
@@ -378,32 +377,10 @@ async function guardarEnSupabase(registros, silencioso){
   } catch(e){
     setSyncUI('error', e.message);
     console.error('Supabase save error', e);
+    throw e; /* relanzar para que el caller (cargarCSV) pueda mostrar el error al usuario */
   }
 }
 
-/* ── SINCRONIZAR TODO D[] → Supabase ─────────────────────── */
-async function sincronizarTodo(){
-  if(!D.length){ alert('No hay datos para sincronizar.'); return; }
-  setSyncUI('loading');
-  try {
-    /* El upsert (on_conflict=recibo + merge-duplicates) ya maneja
-       duplicados a nivel de base de datos, así que enviamos todo
-       directamente en lotes, sin necesitar un paso previo de
-       "verificar existentes" (esa verificación por URL in.(...) era
-       poco confiable y causaba falsos "todo ya sincronizado"). */
-    var GUARDAR_LOTE = 300;
-    var totalGuardados = 0;
-    for(var j=0; j<D.length; j+=GUARDAR_LOTE){
-      var sublote = D.slice(j, j+GUARDAR_LOTE);
-      await guardarEnSupabase(sublote, true);
-      totalGuardados += sublote.length;
-    }
-    setSyncUI('ok', totalGuardados+' registros sincronizados');
-  } catch(e){
-    setSyncUI('error', e.message);
-    console.error('Sync error', e);
-  }
-}
 
 /* ── Helper: actualizar header stats ─────────────────────── */
 function actualizarHeader(){
@@ -1152,14 +1129,32 @@ function cargarCSV(input){
         if($i('hSubtitle'))$i('hSubtitle').innerHTML=sub;
       }
 
-      status.textContent=nuevos+' nuevos, '+act+' actualizados';
-      status.style.color='#90EE90';
-      setTimeout(function(){status.textContent='';status.style.color='';},4000);
-
-      /* Guardar nuevos en Supabase automáticamente */
+      /* Guardar nuevos en Supabase automáticamente (en lotes, con manejo de errores visible) */
       if(nuevos > 0){
         var nuevosRegs = D.slice(D.length - nuevos);
-        guardarEnSupabase(nuevosRegs);
+        status.textContent = 'Guardando '+nuevos+' en Supabase...';
+        status.style.color = '#FFD700';
+        (async function(){
+          try {
+            var LOTE = 300, guardados = 0;
+            for(var bi=0; bi<nuevosRegs.length; bi+=LOTE){
+              var sub = nuevosRegs.slice(bi, bi+LOTE);
+              await guardarEnSupabase(sub, true);
+              guardados += sub.length;
+            }
+            status.textContent = nuevos+' nuevos, '+act+' actualizados — '+guardados+' guardados en Supabase ✓';
+            status.style.color = '#90EE90';
+            setTimeout(function(){status.textContent='';status.style.color='';},5000);
+          } catch(saveErr){
+            status.textContent = 'CSV cargado, pero ERROR guardando en Supabase: '+saveErr.message;
+            status.style.color = '#FF6B6B';
+            console.error('Error guardando en Supabase tras cargar CSV:', saveErr);
+          }
+        })();
+      } else {
+        status.textContent=nuevos+' nuevos, '+act+' actualizados';
+        status.style.color='#90EE90';
+        setTimeout(function(){status.textContent='';status.style.color='';},4000);
       }
 
       /* Refrescar la pestaña activa */
