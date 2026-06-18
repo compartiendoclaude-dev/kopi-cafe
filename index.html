@@ -243,37 +243,53 @@ function setSyncUI(state, msg){
   el.className = 'sync-badge '+s.cls;
 }
 
-/* ── Traer TODAS las filas paginando con Range, sin depender del
-   límite máximo de filas configurado en el servidor PostgREST ── */
+/* ── Traer TODAS las filas en paralelo (todas las páginas simultáneas) ── */
 async function fetchAllPaginado(path, maxTotal){
-  var PAGE = 1000; /* tamaño de página seguro, por debajo de cualquier tope típico del servidor */
-  var todo = [];
-  var offset = 0;
-  while(offset < maxTotal){
-    var r = await supaFetch(path + (path.indexOf('?')!==-1?'&':'?') + 'limit='+PAGE+'&offset='+offset, {
-      headers: { 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY, 'Range-Unit':'items' }
-    });
-    if(!r.ok) throw new Error('HTTP '+r.status+' (offset '+offset+')');
-    var pagina = await r.json();
-    todo = todo.concat(pagina);
-    if(pagina.length < PAGE) break; /* última página */
-    offset += PAGE;
+  var PAGE = 1000;
+  var sep = path.indexOf('?')!==-1?'&':'?';
+
+  /* 1. Primera página + cabecera Content-Range para saber el total real */
+  var r0 = await supaFetch(path+sep+'limit='+PAGE+'&offset=0', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'count=exact'}
+  });
+  if(!r0.ok) throw new Error('HTTP '+r0.status);
+  var primera = await r0.json();
+
+  /* Leer total del servidor desde Content-Range (formato: 0-999/3247) */
+  var cr = r0.headers.get('content-range')||'';
+  var total = parseInt((cr.split('/')[1])||'0')||primera.length;
+  total = Math.min(total, maxTotal);
+
+  if(total <= PAGE) return primera; /* cabe en una sola página */
+
+  /* 2. Lanzar todas las páginas restantes en paralelo */
+  var promesas = [];
+  for(var offset=PAGE; offset<total; offset+=PAGE){
+    (function(off){
+      promesas.push(
+        supaFetch(path+sep+'limit='+PAGE+'&offset='+off, {
+          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+        }).then(function(r){ return r.ok?r.json():Promise.resolve([]); })
+      );
+    })(offset);
   }
-  return todo;
+  var paginas = await Promise.all(promesas);
+  var resultado = primera;
+  paginas.forEach(function(p){ resultado = resultado.concat(p); });
+  return resultado;
 }
 
 /* ── CARGAR datos desde Supabase ─────────────────────────── */
 async function cargarDesdeSupabase(){
   setSyncUI('loading');
   try {
-    /* Traer transacciones — paginado con Range para no depender del
-       límite máximo de filas configurado en el servidor PostgREST
-       (el parámetro limit= no lo garantiza si el servidor tiene un
-       tope menor, ej. 1000 filas por defecto) */
-    var txs = await fetchAllPaginado('kopi_transacciones?select=*&order=id.asc', 200000);
-
-    /* Traer items — mismo enfoque paginado */
-    var items = await fetchAllPaginado('kopi_items?select=*', 500000);
+    /* Traer transacciones e items EN PARALELO */
+    var resultados = await Promise.all([
+      fetchAllPaginado('kopi_transacciones?select=*&order=id.asc', 200000),
+      fetchAllPaginado('kopi_items?select=*', 500000)
+    ]);
+    var txs   = resultados[0];
+    var items = resultados[1];
 
     /* Agrupar items por recibo */
     var itemMap = {};
@@ -754,8 +770,10 @@ function abrBonos(){$i('ovBonos').classList.add('on');rendBonos();}
 function crrBonos(){$i('ovBonos').classList.remove('on');}
 function calcBQ(datos){
   var v=datos.reduce(function(s,d){return s+(d.Total||0);},0);
-  var b=0;
-  datos.forEach(function(d){(d.Items||[]).forEach(function(it){if(it.tipo==='bebida')b+=it.cant;});});
+  /* Contar bebidas = número de recibos con TipoTx 'bebida'
+     (igual a lo que muestra el Resumen al filtrar tipo=bebida).
+     Recibos mixtos no se cuentan como bebida para el bono. */
+  var b=datos.filter(function(d){return d.TipoTx==='bebida';}).length;
   var bv=0,bb=0;
   METAS.forEach(function(m){
     if(m.t==='v'&&v>=m.val)bv+=m.b;
