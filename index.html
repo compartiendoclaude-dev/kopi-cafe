@@ -291,14 +291,20 @@ async function cargarDesdeSupabase(){
     var txs   = resultados[0];
     var items = resultados[1];
 
-    /* Agrupar items por recibo */
+    /* Agrupar items por recibo — deduplicar por nombre+cant+precio */
     var itemMap = {};
     items.forEach(function(it){
       if(!itemMap[it.recibo]) itemMap[it.recibo] = [];
-      itemMap[it.recibo].push({
-        nombre: it.nombre, cant: it.cantidad,
-        precio: parseFloat(it.precio), tipo: it.tipo
-      });
+      var key = it.nombre+'|'+it.cantidad+'|'+it.precio;
+      var arr = itemMap[it.recibo];
+      var existe = arr.some(function(x){ return x._key === key; });
+      if(!existe){
+        arr.push({
+          nombre: it.nombre, cant: it.cantidad,
+          precio: parseFloat(it.precio), tipo: it.tipo,
+          _key: key
+        });
+      }
     });
 
     /* Convertir al formato interno D[] */
