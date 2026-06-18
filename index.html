@@ -83,8 +83,9 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
     <div class="hstat"><div class="hstat-v" id="hReg">0</div><div class="hstat-l">Registros</div></div>
     <div class="hstat"><div class="hstat-v" id="hTot">$0</div><div class="hstat-l">Venta total</div></div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <label for="csvInput" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.6);color:white;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&#x1F4C2; Cargar CSV</label>
-      <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSV(this)">
+      <label for="csvInput" style="position:relative;overflow:hidden;display:inline-block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.6);color:white;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&#x1F4C2; Cargar CSV
+        <input type="file" id="csvInput" accept=".csv,.txt,text/csv,text/comma-separated-values,application/csv,application/vnd.ms-excel,text/plain,*/*" onchange="cargarCSV(this)" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0">
+      </label>
       <span id="csvStatus" style="font-size:10px;color:rgba(255,255,255,0.75);min-height:14px"></span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
@@ -114,13 +115,10 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
 <!-- RESUMEN -->
 <div id="res" class="pane on">
   <div class="filters">
-    <div class="fg"><span class="fl">Periodo</span>
-      <select id="rQ" onchange="fRes()">
-        <option value="all">Todo el periodo</option>
-        <option value="A">Q1 Mayo &ndash; 10 al 24 May</option>
-        <option value="B">Q2 Mayo &ndash; 25 May al 9 Jun</option>
-        <option value="j1">Q1 Junio &ndash; 1 al 15 Jun</option>
-      </select></div>
+    <div class="fg"><span class="fl">Fecha inicio</span>
+      <input id="rDesde" type="date" onchange="fRes()"></div>
+    <div class="fg"><span class="fl">Fecha fin</span>
+      <input id="rHasta" type="date" onchange="fRes()"></div>
     <div class="fg"><span class="fl">Tipo de producto</span>
       <select id="rTipo" onchange="fRes()">
         <option value="">Todos</option>
@@ -139,12 +137,10 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
   <div class="filters">
     <div class="fg"><span class="fl">Buscar cliente o RA</span>
       <input id="cBus" type="text" placeholder="Nombre o numero..." oninput="fCli()"></div>
-    <div class="fg"><span class="fl">Periodo de corte</span>
-      <select id="cPer" onchange="fCli()">
-        <option value="">Todo</option>
-        <option value="A">10 &ndash; 24 May</option>
-        <option value="B">25 May &ndash; 9 Jun</option>
-      </select></div>
+    <div class="fg"><span class="fl">Fecha inicio</span>
+      <input id="cDesde" type="date" onchange="fCli()"></div>
+    <div class="fg"><span class="fl">Fecha fin</span>
+      <input id="cHasta" type="date" onchange="fCli()"></div>
     <div class="fg"><span class="fl">Tipo de producto</span>
       <select id="cTipo" onchange="fCli()">
         <option value="">Todos</option>
@@ -163,13 +159,10 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
   <div class="filters">
     <div class="fg"><span class="fl">Buscar producto</span>
       <input id="pBus" type="text" placeholder="Nombre..." oninput="fPro()"></div>
-    <div class="fg"><span class="fl">Periodo de corte</span>
-      <select id="pPer" onchange="fPro()">
-        <option value="A">10 &ndash; 24 May</option>
-        <option value="B">25 May &ndash; 9 Jun</option>
-        <option value="Q1">1 &ndash; 15 Mayo</option>
-        <option value="Q2">16 &ndash; 31 Mayo</option>
-      </select></div>
+    <div class="fg"><span class="fl">Fecha inicio</span>
+      <input id="pDesde" type="date" onchange="fPro()"></div>
+    <div class="fg"><span class="fl">Fecha fin</span>
+      <input id="pHasta" type="date" onchange="fPro()"></div>
     <div class="fg"><span class="fl">Tipo</span>
       <select id="pTipo" onchange="fPro()">
         <option value="">Todos</option>
@@ -186,12 +179,10 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
 <!-- PAGOS -->
 <div id="pag" class="pane">
   <div class="filters">
-    <div class="fg"><span class="fl">Periodo de corte</span>
-      <select id="pgPer" onchange="fPag()">
-        <option value="">Todo</option>
-        <option value="A">10 &ndash; 24 May</option>
-        <option value="B">25 May &ndash; 9 Jun</option>
-      </select></div>
+    <div class="fg"><span class="fl">Fecha inicio</span>
+      <input id="pgDesde" type="date" onchange="fPag()"></div>
+    <div class="fg"><span class="fl">Fecha fin</span>
+      <input id="pgHasta" type="date" onchange="fPag()"></div>
     <button class="btn btn-a" onclick="expXls()">Exportar Excel</button>
     <button class="btn btn-b" onclick="rstPag()">Resetear</button>
   </div>
@@ -205,15 +196,10 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
     <div class="mh">
       <span class="mt" id="bonosTitulo">Bonos</span>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="fg">
-          <select id="bPer" onchange="rendBonos()" style="font-size:12px;padding:5px 8px;min-width:140px">
-            <option value="mes">Todo Mayo</option>
-            <option value="mQ1">1 &ndash; 15 Mayo</option>
-            <option value="mQ2">16 &ndash; 31 Mayo</option>
-            <option value="mes6">Todo Junio</option>
-            <option value="jQ1">1 &ndash; 15 Junio</option>
-            <option value="jQ2">16 &ndash; 30 Junio</option>
-          </select>
+        <div class="fg" style="display:flex;gap:6px;align-items:center">
+          <input id="bDesde" type="date" onchange="rendBonos()" style="font-size:12px;padding:5px 8px">
+          <span style="font-size:11px;color:var(--tl)">a</span>
+          <input id="bHasta" type="date" onchange="rendBonos()" style="font-size:12px;padding:5px 8px">
         </div>
         <button class="btn btn-a" onclick="expPDFBonos()" style="font-size:12px;padding:6px 12px">&#x1F4C4; PDF</button>
         <button class="btn btn-a" onclick="expWABonos()" style="font-size:12px;padding:6px 12px">&#x1F4AC; WhatsApp</button>
@@ -317,9 +303,9 @@ async function cargarDesdeSupabase(){
 }
 
 /* ── GUARDAR / UPSERT datos a Supabase ───────────────────── */
-async function guardarEnSupabase(registros){
+async function guardarEnSupabase(registros, silencioso){
   if(!registros||!registros.length) return;
-  setSyncUI('loading');
+  if(!silencioso) setSyncUI('loading');
   try {
     /* Preparar transacciones */
     var txRows = registros.map(function(r){
@@ -388,7 +374,7 @@ async function guardarEnSupabase(registros){
       }
     }
 
-    setSyncUI('ok', registros.length+' guardados');
+    setSyncUI(silencioso?'loading':'ok', silencioso?undefined:(registros.length+' guardados'));
   } catch(e){
     setSyncUI('error', e.message);
     console.error('Supabase save error', e);
@@ -399,15 +385,21 @@ async function guardarEnSupabase(registros){
 async function sincronizarTodo(){
   if(!D.length){ alert('No hay datos para sincronizar.'); return; }
   setSyncUI('loading');
-  /* Eliminar items existentes y reinsertar (evita duplicados) */
   try {
-    /* Verificar cuáles recibos ya existen */
+    /* Verificar cuáles recibos ya existen, en LOTES (evita URL demasiado larga) */
     var recibosList = D.map(function(d){ return d.Recibo; });
-    var r = await supaFetch('kopi_transacciones?select=recibo&recibo=in.('+recibosList.map(function(x){ return '"'+x+'"'; }).join(',')+')', {
-      headers:{ 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY }
-    });
     var existentes = {};
-    if(r.ok){
+    var LOTE = 150;
+    for(var i=0; i<recibosList.length; i+=LOTE){
+      var lote = recibosList.slice(i, i+LOTE);
+      var query = lote.map(function(x){ return '"'+x+'"'; }).join(',');
+      var r = await supaFetch('kopi_transacciones?select=recibo&recibo=in.('+query+')', {
+        headers:{ 'apikey':SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY }
+      });
+      if(!r.ok){
+        var errTxt = await r.text();
+        throw new Error('Verificación existentes (lote '+(i/LOTE+1)+'): HTTP '+r.status+' '+errTxt);
+      }
       var existing = await r.json();
       existing.forEach(function(tx){ existentes[tx.recibo]=true; });
     }
@@ -416,10 +408,18 @@ async function sincronizarTodo(){
       setSyncUI('ok', 'Todo ya sincronizado');
       return;
     }
-    await guardarEnSupabase(nuevos);
-    setSyncUI('ok', nuevos.length+' nuevos enviados');
+    /* Guardar en lotes también, para no exceder límites de payload */
+    var GUARDAR_LOTE = 300;
+    var totalGuardados = 0;
+    for(var j=0; j<nuevos.length; j+=GUARDAR_LOTE){
+      var sublote = nuevos.slice(j, j+GUARDAR_LOTE);
+      await guardarEnSupabase(sublote, true);
+      totalGuardados += sublote.length;
+    }
+    setSyncUI('ok', totalGuardados+' nuevos enviados');
   } catch(e){
     setSyncUI('error', e.message);
+    console.error('Sync error', e);
   }
 }
 
@@ -453,31 +453,20 @@ var charts={},_desc=[],CMAP={},_uid=0;
 function $i(id){return document.getElementById(id);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function pF(s){var p=s.split(' ')[0].split('/');return new Date(2000+parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));}
+function enRango(f,desde,hasta){
+  if(desde){var d=new Date(desde+'T00:00:00');if(f<d)return false;}
+  if(hasta){var h=new Date(hasta+'T23:59:59');if(f>h)return false;}
+  return true;
+}
+function lRango(desde,hasta){
+  if(!desde&&!hasta)return 'Todo el periodo';
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function fmt(s){var p=s.split('-');return parseInt(p[2])+' '+meses[parseInt(p[1])-1];}
+  if(desde&&hasta)return fmt(desde)+' &ndash; '+fmt(hasta);
+  if(desde)return 'Desde '+fmt(desde);
+  return 'Hasta '+fmt(hasta);
+}
 function gP(s){var m=s.match(/Kopi\s+([^$]+)/);return m?m[1].trim():s;}
-
-function enPer(f,p){
-  if(!p)return true;
-  var d=f.getDate(),m=f.getMonth()+1;
-  /* Periodos de corte */
-  if(p==='A'){return m===5&&d>=10&&d<=24;}
-  if(p==='B'){if(m===5)return d>=25;if(m===6)return d<=9;return false;}
-  /* Periodos Junio extra */
-  if(p==='E'){return m===6&&d>=10&&d<=24;}
-  if(p==='F'){if(m===6)return d>=25;if(m===7)return d<=9;return false;}
-  return true;
-}
-function lPer(p){
-  if(p==='A')return '10-24May';
-  if(p==='B')return '25May-9Jun';
-  return 'Todo';
-}
-function enQ(f,q){
-  if(q==='all')return true;
-  if(q==='A'){var d=f.getDate(),m=f.getMonth()+1;return m===5&&d>=10&&d<=24;}
-  if(q==='B'){var d2=f.getDate(),m2=f.getMonth()+1;if(m2===5)return d2>=25;if(m2===6)return d2<=9;return false;}
-  if(q==='j1'){return f.getMonth()===5&&f.getDate()<=15;}
-  return true;
-}
 
 window.addEventListener('load',function(){
   var pagos=[];
@@ -504,17 +493,17 @@ function ST(e,id){
 
 /* RESUMEN */
 function fRes(){
-  var q=$i('rQ').value,pago=$i('rPago').value,tipo=$i('rTipo').value;
+  var desde=$i('rDesde').value,hasta=$i('rHasta').value,pago=$i('rPago').value,tipo=$i('rTipo').value;
   var datos=D.filter(function(d){
     var f=pF(d.Fecha);
-    var okQ=enQ(f,q);
+    var okQ=enRango(f,desde,hasta);
     var okPg=!pago||d.Pago===pago;
     var okT=!tipo||d.TipoTx===tipo||d.TipoTx==='mixto';
     return okQ&&okPg&&okT;
   });
   var tot=datos.reduce(function(s,d){return s+(d.Total||0);},0);
   var cant=datos.length,prom=cant?tot/cant:0;
-  var qLabel=q==='A'?'Q1 Mayo (10-24 May)':q==='B'?'Q2 Mayo (25May-9Jun)':q==='j1'?'Q1 Junio (1-15 Jun)':q==='all'?'Todo el periodo':'Todo el periodo';
+  var qLabel=lRango(desde,hasta);
 
   var vDia={};
   datos.forEach(function(d){var k=d.Fecha.split(' ')[0];vDia[k]=(vDia[k]||0)+(d.Total||0);});
@@ -562,17 +551,17 @@ function fRes(){
     });
   },80);
 }
-function rstRes(){$i('rQ').value='all';$i('rTipo').value='';$i('rPago').value='';fRes();}
+function rstRes(){$i('rDesde').value='';$i('rHasta').value='';$i('rTipo').value='';$i('rPago').value='';fRes();}
 
 /* CLIENTES */
 function fCli(){
   var bus=$i('cBus').value.toLowerCase().trim();
-  var per=$i('cPer').value,pago=$i('cPago').value,tipo=$i('cTipo').value;
-  var badge=lPer(per);
+  var desde=$i('cDesde').value,hasta=$i('cHasta').value,pago=$i('cPago').value,tipo=$i('cTipo').value;
+  var badge=lRango(desde,hasta);
 
   var datos=D.filter(function(d){
     var f=pF(d.Fecha);
-    var okP=enPer(f,per);
+    var okP=enRango(f,desde,hasta);
     var okPg=!pago||d.Pago===pago;
     var okT=!tipo||d.TipoTx===tipo||d.TipoTx==='mixto';
     if(!okP||!okPg||!okT)return false;
@@ -695,27 +684,20 @@ function expPDFyWA(uid){
       },800);
     });
 }
-function rstCli(){$i('cBus').value='';$i('cPer').value='A';$i('cTipo').value='';$i('cPago').value='';fCli();}
+function rstCli(){$i('cBus').value='';$i('cDesde').value='';$i('cHasta').value='';$i('cTipo').value='';$i('cPago').value='';fCli();}
 
 /* PRODUCTOS */
-function filtrarDatosPro(per){
-  if(per==='Q1')return D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===4&&f.getDate()<=15;});
-  if(per==='Q2')return D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===4&&f.getDate()>=16;});
-  return D.filter(function(d){return enPer(pF(d.Fecha),per);});
-}
-function lPerPro(per){
-  if(per==='Q1')return '1-15 Mayo';
-  if(per==='Q2')return '16-31 Mayo';
-  return lPer(per);
+function filtrarDatosPro(desde,hasta){
+  return D.filter(function(d){return enRango(pF(d.Fecha),desde,hasta);});
 }
 var _proLista=[],_proBadge='';
 function fPro(){
   var bus=$i('pBus').value.toLowerCase().trim();
-  var per=$i('pPer').value,tipo=$i('pTipo').value;
-  var badge=lPerPro(per);
+  var desde=$i('pDesde').value,hasta=$i('pHasta').value,tipo=$i('pTipo').value;
+  var badge=lRango(desde,hasta);
   _proBadge=badge;
   var vP={},cP={};
-  filtrarDatosPro(per).forEach(function(d){
+  filtrarDatosPro(desde,hasta).forEach(function(d){
     (d.Items||[]).forEach(function(it){
       if(tipo&&it.tipo!==tipo)return;
       if(bus&&it.nombre.toLowerCase().indexOf(bus)===-1)return;
@@ -739,13 +721,13 @@ function fPro(){
   h+='</div></div>';
   $i('proC').innerHTML=h;
 }
-function rstPro(){$i('pBus').value='';$i('pPer').value='A';$i('pTipo').value='';fPro();}
+function rstPro(){$i('pBus').value='';$i('pDesde').value='';$i('pHasta').value='';$i('pTipo').value='';fPro();}
 
 /* PAGOS */
 function fPag(){
-  var per=$i('pgPer').value;
-  var badge=lPer(per);
-  var datos=D.filter(function(d){return enPer(pF(d.Fecha),per);});
+  var desde=$i('pgDesde').value,hasta=$i('pgHasta').value;
+  var badge=lRango(desde,hasta);
+  var datos=D.filter(function(d){return enRango(pF(d.Fecha),desde,hasta);});
   var vPg={},cPg={},desc=[];
   datos.forEach(function(d){
     var p=d.Pago||'?';
@@ -788,7 +770,7 @@ function expXls(){
   XLSX.utils.book_append_sheet(wb,ws,'Descuentos');
   XLSX.writeFile(wb,'kopi_descuentos.xlsx');
 }
-function rstPag(){$i('pgPer').value='';fPag();}
+function rstPag(){$i('pgDesde').value='';$i('pgHasta').value='';fPag();}
 
 /* BONOS */
 function abrBonos(){$i('ovBonos').classList.add('on');rendBonos();}
@@ -823,50 +805,17 @@ function secBonos(label,datos){
     +'<span style="font-weight:600">Total bonificacion</span>'
     +'<span style="font-size:17px;font-weight:900;color:var(--ok)">$'+r.tot+'</span></div></div>';
 }
-function getDatosBonos(per){
-  if(per==='mes'){
-    var mayo=D.filter(function(d){return pF(d.Fecha).getMonth()===4;});
-    return [{label:'Quincena 1 &mdash; 1 al 15 Mayo',datos:mayo.filter(function(d){return pF(d.Fecha).getDate()<=15;})},
-            {label:'Quincena 2 &mdash; 16 al 31 Mayo',datos:mayo.filter(function(d){return pF(d.Fecha).getDate()>=16;})}];
-  }
-  if(per==='mQ1'){
-    var sub=D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===4&&f.getDate()<=15;});
-    return [{label:'1 al 15 Mayo',datos:sub}];
-  }
-  if(per==='mQ2'){
-    var sub=D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===4&&f.getDate()>=16;});
-    return [{label:'16 al 31 Mayo',datos:sub}];
-  }
-  if(per==='mes6'){
-    var jun=D.filter(function(d){return pF(d.Fecha).getMonth()===5;});
-    return [{label:'Quincena 1 &mdash; 1 al 15 Junio',datos:jun.filter(function(d){return pF(d.Fecha).getDate()<=15;})},
-            {label:'Quincena 2 &mdash; 16 al 30 Junio',datos:jun.filter(function(d){return pF(d.Fecha).getDate()>=16;})}];
-  }
-  if(per==='jQ1'){
-    var sub=D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===5&&f.getDate()<=15;});
-    return [{label:'1 al 15 Junio',datos:sub}];
-  }
-  if(per==='jQ2'){
-    var sub=D.filter(function(d){var f=pF(d.Fecha);return f.getMonth()===5&&f.getDate()>=16;});
-    return [{label:'16 al 30 Junio',datos:sub}];
-  }
-  return [{label:'Todo',datos:D}];
+function getDatosBonos(desde,hasta){
+  var datos=D.filter(function(d){return enRango(pF(d.Fecha),desde,hasta);});
+  return [{label:lRango(desde,hasta),datos:datos}];
 }
 
 function rendBonos(){
-  var per=$i('bPer')?$i('bPer').value:'mes';
-  var secciones=getDatosBonos(per);
+  var desde=$i('bDesde')?$i('bDesde').value:'',hasta=$i('bHasta')?$i('bHasta').value:'';
+  var secciones=getDatosBonos(desde,hasta);
 
   /* Título dinámico */
-  var tituloMap={
-    mes:'Bonos &mdash; Mayo 2026',
-    mQ1:'Bonos &mdash; 1 al 15 Mayo',
-    mQ2:'Bonos &mdash; 16 al 31 Mayo',
-    mes6:'Bonos &mdash; Junio 2026',
-    jQ1:'Bonos &mdash; 1 al 15 Junio',
-    jQ2:'Bonos &mdash; 16 al 30 Junio'
-  };
-  if($i('bonosTitulo'))$i('bonosTitulo').innerHTML=tituloMap[per]||'Bonos';
+  if($i('bonosTitulo'))$i('bonosTitulo').innerHTML='Bonos &mdash; '+lRango(desde,hasta);
 
   var totalBono=secciones.reduce(function(s,sec){return s+calcBQ(sec.datos).tot;},0);
   var resumenParts=secciones.map(function(sec){
@@ -885,13 +834,9 @@ function rendBonos(){
 }
 
 function expPDFBonos(){
-  var per=$i('bPer')?$i('bPer').value:'mes';
-  var secciones=getDatosBonos(per);
-  var tituloMap={
-    mes:'Bonos Mayo 2026',mQ1:'Bonos 1-15 Mayo',mQ2:'Bonos 16-31 Mayo',
-    mes6:'Bonos Junio 2026',jQ1:'Bonos 1-15 Junio',jQ2:'Bonos 16-30 Junio'
-  };
-  var tituloDoc=tituloMap[per]||'Bonos';
+  var desde=$i('bDesde')?$i('bDesde').value:'',hasta=$i('bHasta')?$i('bHasta').value:'';
+  var secciones=getDatosBonos(desde,hasta);
+  var tituloDoc='Bonos &mdash; '+lRango(desde,hasta);
   var totalBono=secciones.reduce(function(s,sec){return s+calcBQ(sec.datos).tot;},0);
   /* compatibilidad con código existente */
   var b1=calcBQ(secciones[0].datos);
@@ -987,13 +932,9 @@ function expPDFBonos(){
 }
 
 function expWABonos(){
-  var per=$i('bPer')?$i('bPer').value:'mes';
-  var secciones=getDatosBonos(per);
-  var tituloMap={
-    mes:'Mayo 2026',mQ1:'1 al 15 Mayo',mQ2:'16 al 31 Mayo',
-    mes6:'Junio 2026',jQ1:'1 al 15 Junio',jQ2:'16 al 30 Junio'
-  };
-  var titulo=tituloMap[per]||per;
+  var desde=$i('bDesde')?$i('bDesde').value:'',hasta=$i('bHasta')?$i('bHasta').value:'';
+  var secciones=getDatosBonos(desde,hasta);
+  var titulo=lRango(desde,hasta);
   var totalBono=secciones.reduce(function(s,sec){return s+calcBQ(sec.datos).tot;},0);
 
   var lineas=secciones.map(function(sec){
@@ -1099,7 +1040,29 @@ function cargarCSV(input){
 
       /* Detectar separador */
       var sep=lines[0].indexOf(';')!==-1?';':',';
-      var headers=lines[0].split(sep).map(function(h){return h.trim().replace(/^"|"$/g,'');});
+
+      /* Parser CSV que respeta comillas (evita romper columnas cuando
+         la Descripción contiene comas internas, ej: "1 x A $1, 1 x B $2") */
+      function parseCSVLine(line, sep){
+        var out=[], cur='', inQ=false;
+        for(var i=0;i<line.length;i++){
+          var c=line[i];
+          if(inQ){
+            if(c==='"'){
+              if(line[i+1]==='"'){cur+='"';i++;}
+              else{inQ=false;}
+            } else { cur+=c; }
+          } else {
+            if(c==='"'){inQ=true;}
+            else if(c===sep){out.push(cur);cur='';}
+            else{cur+=c;}
+          }
+        }
+        out.push(cur);
+        return out.map(function(v){return v.trim();});
+      }
+
+      var headers=parseCSVLine(lines[0],sep).map(function(h){return h.replace(/^"|"$/g,'');});
 
       /* Mapear columnas */
       function col(h,alts){
@@ -1157,7 +1120,7 @@ function cargarCSV(input){
 
       var nuevos=0,act=0;
       for(var i=1;i<lines.length;i++){
-        var vals=lines[i].split(sep).map(function(v){return v.trim().replace(/^"|"$/g,'');});
+        var vals=parseCSVLine(lines[i],sep).map(function(v){return v.replace(/^"|"$/g,'');});
         if(vals.length<4)continue;
         var recibo=iR!==-1?vals[iR]:'';
         var desc  =iD!==-1?vals[iD]:'';
