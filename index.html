@@ -373,7 +373,7 @@ async function guardarEnSupabase(registros, silencioso){
       }
     }
 
-    setSyncUI(silencioso?'loading':'ok', silencioso?undefined:(registros.length+' guardados'));
+    if(!silencioso) setSyncUI('ok', registros.length+' guardados');
   } catch(e){
     setSyncUI('error', e.message);
     console.error('Supabase save error', e);
