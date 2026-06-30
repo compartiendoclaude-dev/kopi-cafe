@@ -922,6 +922,7 @@ function expPDFBonos(){
     +'</table></div>'
     +'</div>';
 
+  var per=(desde&&hasta)?desde.replace(/-/g,'')+'_'+hasta.replace(/-/g,''):(desde||hasta||'periodo').replace(/-/g,'');
   var el=document.createElement('div');
   el.innerHTML=html;
   html2pdf().set({
