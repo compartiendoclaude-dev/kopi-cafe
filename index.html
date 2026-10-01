@@ -1081,15 +1081,18 @@ function cargarCSV(input){
       var iCl =col('Nombre del cliente',['cliente','customer','client']);
       var iCa =col('Nombre del cajero',['cajero','cashier']);
 
-      var BPROD=['Chocolate extra','Kopi Americano G.','Kopi Capuccino','Kopi Espresso',
-                 'Kopi Frappe','Kopi Latte ice','Kopi Soda italiana sencilla',
-                 'Kopi chocolatte','Kopi latte','Kopi mocachino',
-                 'Kopi soda italiana con topping','Kopi t\u00e8','Salutaris/Coca cola'];
+      var BPROD=['Frappe/frozen de temporada',
+                 'Kopi Americano G.','Kopi Capuccino','Kopi Chai caliente',
+                 'Kopi Espresso','Kopi Frappe','Kopi Latte ice','Kopi Soda italiana sencilla',
+                 'Kopi chai frappe','Kopi chai iced','Kopi chocolatte','Kopi latte',
+                 'Kopi matcha iced','Kopi mocachino','Kopi soda italiana con topping',
+                 'Kopi taro caliente','Kopi taro frappe','Kopi taro iced',
+                 'Matcha iced','Tisana'];
       var CPROD=['Bagel con pollo','Bagel jamon','Galleta','Kopi Dona','Kopi Magdalena',
                  'Kopi Palomitas de maiz','Kopi Pizza','Kopi Sandwich de pollo',
                  'Kopi Strudel','Kopi Tres leches','Kopi Yogurt','Kopi avena',
                  'Kopi cheesecake','Kopi cupcake','Kopi gelatina','Kopi kekitos 3x',
-                 'Kopi pastel','Kopi rollos de canela','Kopi sandwhis'];
+                 'Kopi pastel','Kopi rollos de canela','Kopi sandwhis','Kopi Pie de pumpkin'];
 
       function clasif(n){
         if(BPROD.indexOf(n)!==-1)return 'bebida';
