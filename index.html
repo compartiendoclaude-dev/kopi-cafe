@@ -476,6 +476,7 @@ window.addEventListener('load',function(){
     });
   });
   actualizarHeader();
+  (function(){var hoy=new Date(),hace30=new Date();hace30.setDate(hoy.getDate()-30);function fmt(d){return d.toISOString().slice(0,10);}$i("rDesde").value=fmt(hace30);$i("rHasta").value=fmt(hoy);})();
   fRes();
   /* Auto-cargar desde Supabase al iniciar */
   setTimeout(cargarDesdeSupabase, 800);
@@ -550,7 +551,7 @@ function fRes(){
     });
   },80);
 }
-function rstRes(){$i('rDesde').value='';$i('rHasta').value='';$i('rTipo').value='';$i('rPago').value='';fRes();}
+function rstRes(){var hoy=new Date(),hace30=new Date();hace30.setDate(hoy.getDate()-30);function fmt(d){return d.toISOString().slice(0,10);}$i('rDesde').value=fmt(hace30);$i('rHasta').value=fmt(hoy);$i('rTipo').value='';$i('rPago').value='';fRes();}
 
 /* CLIENTES */
 function fCli(){
