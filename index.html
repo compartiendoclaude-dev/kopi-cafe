@@ -476,7 +476,6 @@ window.addEventListener('load',function(){
     });
   });
   actualizarHeader();
-  (function(){var hoy=new Date(),hace30=new Date();hace30.setDate(hoy.getDate()-30);function fmt(d){return d.toISOString().slice(0,10);}$i("rDesde").value=fmt(hace30);$i("rHasta").value=fmt(hoy);})();
   fRes();
   /* Auto-cargar desde Supabase al iniciar */
   setTimeout(cargarDesdeSupabase, 800);
@@ -551,7 +550,7 @@ function fRes(){
     });
   },80);
 }
-function rstRes(){var hoy=new Date(),hace30=new Date();hace30.setDate(hoy.getDate()-30);function fmt(d){return d.toISOString().slice(0,10);}$i('rDesde').value=fmt(hace30);$i('rHasta').value=fmt(hoy);$i('rTipo').value='';$i('rPago').value='';fRes();}
+function rstRes(){$i('rDesde').value='';$i('rHasta').value='';$i('rTipo').value='';$i('rPago').value='';fRes();}
 
 /* CLIENTES */
 function fCli(){
@@ -1082,18 +1081,15 @@ function cargarCSV(input){
       var iCl =col('Nombre del cliente',['cliente','customer','client']);
       var iCa =col('Nombre del cajero',['cajero','cashier']);
 
-      var BPROD=['Frappe/frozen de temporada',
-                 'Kopi Americano G.','Kopi Capuccino','Kopi Chai caliente',
-                 'Kopi Espresso','Kopi Frappe','Kopi Latte ice','Kopi Soda italiana sencilla',
-                 'Kopi chai frappe','Kopi chai iced','Kopi chocolatte','Kopi latte',
-                 'Kopi matcha iced','Kopi mocachino','Kopi soda italiana con topping',
-                 'Kopi taro caliente','Kopi taro frappe','Kopi taro iced',
-                 'Matcha iced','Tisana'];
+      var BPROD=['Chocolate extra','Kopi Americano G.','Kopi Capuccino','Kopi Espresso',
+                 'Kopi Frappe','Kopi Latte ice','Kopi Soda italiana sencilla',
+                 'Kopi chocolatte','Kopi latte','Kopi mocachino',
+                 'Kopi soda italiana con topping','Kopi t\u00e8','Salutaris/Coca cola'];
       var CPROD=['Bagel con pollo','Bagel jamon','Galleta','Kopi Dona','Kopi Magdalena',
                  'Kopi Palomitas de maiz','Kopi Pizza','Kopi Sandwich de pollo',
                  'Kopi Strudel','Kopi Tres leches','Kopi Yogurt','Kopi avena',
                  'Kopi cheesecake','Kopi cupcake','Kopi gelatina','Kopi kekitos 3x',
-                 'Kopi pastel','Kopi rollos de canela','Kopi sandwhis','Kopi Pie de pumpkin'];
+                 'Kopi pastel','Kopi rollos de canela','Kopi sandwhis'];
 
       function clasif(n){
         if(BPROD.indexOf(n)!==-1)return 'bebida';
@@ -1109,8 +1105,33 @@ function cargarCSV(input){
         return out;
       }
       function normFecha(s){
-        s=s.trim().replace(/^"|"$/g,'');
-        var p=s.split(' '),fd=p[0],hr=p[1]||'00:00';
+        // Limpiar caracteres Unicode no estándar (U+202F espacio fino, U+00A0 nbsp, etc.)
+        s=s.trim().replace(/^"|"$/g,'').replace(/[           ​]/g,' ').replace(/\s+/g,' ').trim();
+        // Separar: primera parte es la fecha (d/m/yyyy o d/m/yy), resto es hora+am/pm
+        var spaceIdx=s.indexOf(' ');
+        var fd=spaceIdx>-1?s.slice(0,spaceIdx):s;
+        var resto=spaceIdx>-1?s.slice(spaceIdx+1).trim():'';
+        // Extraer HH:MM de la parte de hora (ignorar a.m./p.m./am/pm texto)
+        var hr='00:00',pm=false;
+        if(resto){
+          var lc=resto.toLowerCase();
+          pm=(lc.indexOf('p')>-1&&lc.indexOf('m')>-1);
+          var mHr=resto.match(/(\d{1,2}):(\d{2})/);
+          if(mHr){
+            var hh=parseInt(mHr[1]),mi=parseInt(mHr[2]);
+            if(pm&&hh<12)hh+=12;
+            if(!pm&&hh===12)hh=0;
+            hr=(hh<10?'0'+hh:hh)+':'+(mi<10?'0'+mi:mi);
+          } else {
+            var mH=resto.match(/^(\d{1,2})/);
+            if(mH){
+              var hh=parseInt(mH[1]);
+              if(pm&&hh<12)hh+=12;
+              if(!pm&&hh===12)hh=0;
+              hr=(hh<10?'0'+hh:hh)+':00';
+            }
+          }
+        }
         var parts=fd.split('/');
         if(parts.length===3){
           var dd=parseInt(parts[0]),mm=parseInt(parts[1]),yy=parts[2];
