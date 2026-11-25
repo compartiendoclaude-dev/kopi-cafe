@@ -607,6 +607,7 @@ function labelCorte(c){
 }
 
 var _chartCorteComp=null;
+var _chartAnual=null;
 
 function fCorte(){
   var cortes=getUltimosCortes(11); // 0=actual, 1-10=histórico
@@ -727,6 +728,107 @@ function fCorte(){
   }
   h+='</tbody></table></div></div>';
 
+  /* ── COMPARATIVA ANUAL (todos los años con datos) ── */
+  // Detectar años disponibles en D
+  var anosDisp=[];
+  D.forEach(function(d){
+    var f=pF(d.Fecha);
+    if(f){var y=f.getFullYear();if(anosDisp.indexOf(y)===-1)anosDisp.push(y);}
+  });
+  anosDisp.sort();
+
+  if(anosDisp.length>=1){
+    // Definir los 10 cortes del año de referencia (el más reciente)
+    var anoRef=anosDisp[anosDisp.length-1];
+    // Generar los 10 cortes quinquenales en orden cronológico
+    // Usamos el mismo getCorteLimits pero para cada período del año de referencia
+    var CORTES_TIPO=[
+      {m:1,d:10},{m:1,d:25},{m:2,d:10},{m:2,d:25},
+      {m:3,d:10},{m:3,d:25},{m:4,d:10},{m:4,d:25},
+      {m:5,d:10},{m:5,d:25},{m:6,d:10},{m:6,d:25},
+      {m:7,d:10},{m:7,d:25},{m:8,d:10},{m:8,d:25},
+      {m:9,d:10},{m:9,d:25},{m:10,d:10},{m:10,d:25},
+      {m:11,d:10},{m:11,d:25},{m:12,d:10},{m:12,d:25}
+    ];
+    // Para cada corte-tipo, calcular el rango (desde/hasta) por año
+    function getCortePorAno(ano, m, startDay){
+      var desde,hasta;
+      if(startDay===10){
+        desde=ano+'-'+(m<10?'0':'')+m+'-10';
+        hasta=ano+'-'+(m<10?'0':'')+m+'-24';
+      } else {
+        // 25 del mes m → 9 del mes m+1
+        var mesS=m,mesE=m+1,anoE=ano;
+        if(mesE>12){mesE=1;anoE=ano+1;}
+        desde=ano+'-'+(mesS<10?'0':'')+mesS+'-25';
+        hasta=anoE+'-'+(mesE<10?'0':'')+mesE+'-09';
+      }
+      return{desde:desde,hasta:hasta};
+    }
+    function labelCorteCorto(m,startDay){
+      var MESES=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      if(startDay===10) return '10-24 '+MESES[m];
+      var mesE=m+1>12?1:m+1;
+      return '25 '+MESES[m]+'–9 '+MESES[mesE];
+    }
+    // Totales por corte por año
+    var labelsAnual=CORTES_TIPO.map(function(ct){return labelCorteCorto(ct.m,ct.d);});
+    var ANOS_COLS=['#8B4513','#2D6B9E','#2D8659','#9E5A1A','#6B2D8B'];
+    var datasetsAnual=anosDisp.map(function(ano,ai){
+      var data=CORTES_TIPO.map(function(ct){
+        var rng=getCortePorAno(ano,ct.m,ct.d);
+        var dat=getDatosCorte(rng);
+        return parseFloat(dat.reduce(function(s,d){return s+(d.Total||0);},0).toFixed(2));
+      });
+      return{
+        label:String(ano),
+        data:data,
+        backgroundColor:ANOS_COLS[ai%ANOS_COLS.length]+(ai===anosDisp.length-1?'':'99'),
+        borderColor:ANOS_COLS[ai%ANOS_COLS.length],
+        borderWidth:ai===anosDisp.length-1?2:1,
+        borderRadius:4,
+        borderSkipped:false
+      };
+    });
+
+    var tituloAnual=anosDisp.join(' vs ');
+    h+='<div class="corte-chart-wrap">'
+      +'<div class="corte-chart-title"><span>&#x1F4C5; Comparativa anual — '+esc(tituloAnual)+'</span>'
+      +'<span style="font-size:11px;color:var(--tl);font-weight:normal">venta por corte quincenal</span></div>'
+      +'<div class="corte-chart-h" style="height:260px"><canvas id="chAnualComp"></canvas></div>'
+      +'</div>';
+
+    // Tabla resumen por año
+    h+='<div class="corte-chart-wrap"><div class="corte-chart-title">Resumen anual</div>'
+      +'<div style="overflow-x:auto"><table class="corte-hist-tabla">'
+      +'<thead><tr><th>Año</th><th>Venta total</th><th>Tx</th><th>Ticket prom.</th><th>Varianza vs anterior</th></tr></thead><tbody>';
+    var resAnual=anosDisp.map(function(ano){
+      var dat=D.filter(function(d){var f=pF(d.Fecha);return f&&f.getFullYear()===ano;});
+      var tot=dat.reduce(function(s,d){return s+(d.Total||0);},0);
+      return{ano:ano,total:tot,cnt:dat.length};
+    });
+    resAnual.forEach(function(r,i){
+      var prev=i>0?resAnual[i-1]:null;
+      var vp=prev&&prev.total>0?((r.total-prev.total)/prev.total*100):null;
+      var vm=prev?(r.total-prev.total):null;
+      var vchip='<span class="corte-var-chip neu">–</span>';
+      if(vp!==null){
+        var vcls=vp>=0?'pos':'neg';
+        vchip='<span class="corte-var-chip '+vcls+'">'+(vp>=0?'▲':'▼')+' '+(vp>=0?'+':'')+vp.toFixed(1)+'%</span>';
+        if(vm!==null) vchip+='<div style="font-size:10px;color:var(--tl);margin-top:2px">'+(vm>=0?'+':'')+' $'+Math.abs(vm).toFixed(2)+'</div>';
+      }
+      var prom=r.cnt?r.total/r.cnt:0;
+      h+='<tr>'
+        +'<td><strong>'+r.ano+'</strong></td>'
+        +'<td><strong>$'+r.total.toFixed(2)+'</strong></td>'
+        +'<td>'+r.cnt+'</td>'
+        +'<td>$'+prom.toFixed(2)+'</td>'
+        +'<td>'+vchip+'</td>'
+        +'</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+
   $i('corteC').innerHTML=h;
 
   // Renderizar gráfica apilada por tipo de pago
@@ -835,6 +937,72 @@ function fCorte(){
         }
       }
     });
+
+    // Gráfica comparativa anual
+    var ctxA=$i('chAnualComp');
+    if(ctxA){
+      if(_chartAnual)_chartAnual.destroy();
+      var anosD2=[];
+      D.forEach(function(d){var f=pF(d.Fecha);if(f){var y=f.getFullYear();if(anosD2.indexOf(y)===-1)anosD2.push(y);}});
+      anosD2.sort();
+      if(anosD2.length>=1){
+        var CORTES_T2=[
+          {m:1,d:10},{m:1,d:25},{m:2,d:10},{m:2,d:25},
+          {m:3,d:10},{m:3,d:25},{m:4,d:10},{m:4,d:25},
+          {m:5,d:10},{m:5,d:25},{m:6,d:10},{m:6,d:25},
+          {m:7,d:10},{m:7,d:25},{m:8,d:10},{m:8,d:25},
+          {m:9,d:10},{m:9,d:25},{m:10,d:10},{m:10,d:25},
+          {m:11,d:10},{m:11,d:25},{m:12,d:10},{m:12,d:25}
+        ];
+        function getCortePorAno2(ano,m,startDay){
+          var desde,hasta;
+          if(startDay===10){
+            desde=ano+'-'+(m<10?'0':'')+m+'-10';
+            hasta=ano+'-'+(m<10?'0':'')+m+'-24';
+          } else {
+            var mesE=m+1,anoE=ano;if(mesE>12){mesE=1;anoE=ano+1;}
+            desde=ano+'-'+(m<10?'0':'')+m+'-25';
+            hasta=anoE+'-'+(mesE<10?'0':'')+mesE+'-09';
+          }
+          return{desde:desde,hasta:hasta};
+        }
+        function lbCorto(m,d){
+          var M=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+          return d===10?'10 '+M[m]:'25 '+M[m];
+        }
+        var labsA=CORTES_T2.map(function(ct){return lbCorto(ct.m,ct.d);});
+        var ACOLS=['#8B4513','#2D6B9E','#2D8659','#9E5A1A','#6B2D8B'];
+        var dsA=anosD2.map(function(ano,ai){
+          var data=CORTES_T2.map(function(ct){
+            var rng=getCortePorAno2(ano,ct.m,ct.d);
+            return parseFloat(getDatosCorte(rng).reduce(function(s,d){return s+(d.Total||0);},0).toFixed(2));
+          });
+          return{label:String(ano),data:data,
+            backgroundColor:ACOLS[ai%ACOLS.length]+(ai===anosD2.length-1?'CC':'66'),
+            borderColor:ACOLS[ai%ACOLS.length],borderWidth:ai===anosD2.length-1?2:1,
+            borderRadius:3,borderSkipped:false};
+        });
+        _chartAnual=new Chart(ctxA,{
+          type:'bar',
+          data:{labels:labsA,datasets:dsA},
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{
+              legend:{display:true,position:'top',labels:{font:{size:11},padding:16,usePointStyle:true}},
+              tooltip:{callbacks:{
+                title:function(items){return items[0].label;},
+                label:function(item){var v=item.parsed.y;return v===0?null:' '+item.dataset.label+': $'+v.toFixed(2);},
+                filter:function(item){return item.parsed.y>0;}
+              }}
+            },
+            scales:{
+              x:{ticks:{font:{size:9},maxRotation:45}},
+              y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v.toFixed(0);}}}
+            }
+          }
+        });
+      }
+    }
   },80);
 }
 
