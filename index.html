@@ -376,6 +376,8 @@ async function cargarDesdeSupabase(){
     actualizarHeader();
     setSyncUI('ok', nuevos+' nuevos de DB');
     /* Siempre refrescar la vista activa después de cargar desde DB */
+    aplicarFiltroCorteActual('rDesde','rHasta');
+    aplicarFiltroCorteActual('pgDesde','pgHasta');
     var pane = document.querySelector('.pane.on');
     if(pane){ var id=pane.id; if(id==='corte')fCorte(); else if(id==='res')fRes(); else if(id==='cli')fCli(); else if(id==='pro')fPro(); else if(id==='pag')fPag(); }
     else fCorte();
@@ -529,16 +531,27 @@ function ST(e,id){
   document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('on');});
   $i(id).classList.add('on');e.target.classList.add('on');
   if(id==='corte')fCorte();
-  if(id==='res')fRes();
+  if(id==='res'){aplicarFiltroCorteActual('rDesde','rHasta');fRes();}
   if(id==='cli')fCli();
   if(id==='pro')fPro();
-  if(id==='pag')fPag();
+  if(id==='pag'){aplicarFiltroCorteActual('pgDesde','pgHasta');fPag();}
 }
 
 /* ═══════════════════════════════════════════════════════
    CORTE QUINCENAL
    Cortes: día 25→día 9 del mes siguiente  y  día 10→día 24
    ═══════════════════════════════════════════════════════ */
+/* Pre-llena los inputs de fecha con el corte actual si están vacíos */
+function aplicarFiltroCorteActual(idDesde,idHasta){
+  var elD=$i(idDesde),elH=$i(idHasta);
+  if(!elD||!elH)return;
+  if(!elD.value&&!elH.value){
+    var c=getCorteLimits(new Date());
+    elD.value=c.desde;
+    elH.value=c.hasta;
+  }
+}
+
 function getCorteLimits(ref){
   /* ref: Date de referencia (hoy por defecto).
      Devuelve {desde, hasta} en formato 'YYYY-MM-DD' para el corte que contiene ref */
