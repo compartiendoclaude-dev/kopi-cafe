@@ -714,38 +714,109 @@ function fCorte(){
 
   $i('corteC').innerHTML=h;
 
-  // Renderizar gráfica
+  // Renderizar gráfica apilada por tipo de pago
   setTimeout(function(){
     var ctx=$i('chCorteComp');if(!ctx)return;
     if(_chartCorteComp)_chartCorteComp.destroy();
-    // Los datos para la gráfica: cortes del más viejo al más nuevo
-    var labelsG=[],datosG=[],coloresG=[];
-    for(var j=todoCortes.length-1;j>=0;j--){
-      labelsG.push(todoCortes[j].label);
-      datosG.push(parseFloat(todoCortes[j].total.toFixed(2)));
-      coloresG.push(todoCortes[j].esActual?'#DAA520':'rgba(139,69,19,0.65)');
+
+    // Recopilar todos los tipos de pago en todos los cortes
+    var todosLosPagos=[];
+    todoCortes.forEach(function(c){
+      var dat=getDatosCorte({desde:c.desde,hasta:c.hasta});
+      dat.forEach(function(d){var p=d.Pago||'?';if(todosLosPagos.indexOf(p)===-1)todosLosPagos.push(p);});
+    });
+
+    // Ordenar: Descuento primero, luego el resto por nombre
+    todosLosPagos.sort(function(a,b){
+      if(a==='Descuento')return -1;
+      if(b==='Descuento')return 1;
+      return a.localeCompare(b);
+    });
+
+    // Paleta de colores por tipo de pago
+    var PAGO_COLS={
+      'Descuento':'#2D8659',
+      'Cash':'#8B4513',
+      'Efectivo':'#8B4513',
+      'Tarjeta':'#1A6B9E',
+      'Card':'#1A6B9E',
+      'Crédito':'#9E5A1A',
+      'Débito':'#5A7A9E'
+    };
+    var PAGO_COLS_ACTUAL={
+      'Descuento':'#34A373',
+      'Cash':'#DAA520',
+      'Efectivo':'#DAA520',
+      'Tarjeta':'#2196F3',
+      'Card':'#2196F3',
+      'Crédito':'#E07820',
+      'Débito':'#7090BE'
+    };
+    var FALLBACK_COLS=['#6B4F3A','#7A6B2A','#3A5F6B','#5A3A6B','#3A6B5A','#6B3A3A'];
+    function getCol(pago,esActual){
+      var cols=esActual?PAGO_COLS_ACTUAL:PAGO_COLS;
+      if(cols[pago])return cols[pago];
+      var idx=todosLosPagos.indexOf(pago)%FALLBACK_COLS.length;
+      return esActual?FALLBACK_COLS[idx]+'CC':FALLBACK_COLS[idx]+'99';
     }
+
+    // Labels: cortes del más viejo al más nuevo
+    var labelsG=[];
+    var cortesOrdenados=todoCortes.slice().reverse(); // viejo→nuevo
+    cortesOrdenados.forEach(function(c){labelsG.push(c.label);});
+
+    // Construir datasets (un dataset por tipo de pago)
+    var datasets=todosLosPagos.map(function(pago){
+      var data=cortesOrdenados.map(function(c,i){
+        var dat=getDatosCorte({desde:c.desde,hasta:c.hasta});
+        return parseFloat(dat.reduce(function(s,d){return s+((d.Pago===pago?d.Total:0)||0);},0).toFixed(2));
+      });
+      var bgCols=cortesOrdenados.map(function(c){return getCol(pago,c.esActual);});
+      return{
+        label:pago,
+        data:data,
+        backgroundColor:bgCols,
+        borderRadius:0,
+        borderSkipped:false,
+        stack:'corte'
+      };
+    });
+    // El último dataset (el de arriba) lleva borderRadius en la parte superior
+    if(datasets.length>0){
+      datasets[datasets.length-1].borderRadius={topLeft:5,topRight:5};
+    }
+
     _chartCorteComp=new Chart(ctx,{
       type:'bar',
-      data:{
-        labels:labelsG,
-        datasets:[{
-          label:'Venta del corte ($)',
-          data:datosG,
-          backgroundColor:coloresG,
-          borderRadius:5,
-          borderSkipped:false
-        }]
-      },
+      data:{labels:labelsG,datasets:datasets},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:function(ctx){return ' $'+ctx.parsed.y.toFixed(2);}}}
+          legend:{
+            display:true,
+            position:'bottom',
+            labels:{font:{size:10},padding:12,usePointStyle:true,pointStyleWidth:10}
+          },
+          tooltip:{
+            callbacks:{
+              title:function(items){return items[0].label;},
+              label:function(item){
+                var v=item.parsed.y;
+                if(v===0)return null;
+                return ' '+item.dataset.label+': $'+v.toFixed(2);
+              },
+              footer:function(items){
+                var total=items.reduce(function(s,i){return s+i.parsed.y;},0);
+                return 'Total: $'+total.toFixed(2);
+              }
+            },
+            filter:function(item){return item.parsed.y>0;},
+            footerFont:{weight:'bold'}
+          }
         },
         scales:{
-          x:{ticks:{font:{size:9},maxRotation:45}},
-          y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v.toFixed(0);}}}
+          x:{stacked:true,ticks:{font:{size:9},maxRotation:45}},
+          y:{stacked:true,beginAtZero:true,ticks:{callback:function(v){return '$'+v.toFixed(0);}}}
         }
       }
     });
