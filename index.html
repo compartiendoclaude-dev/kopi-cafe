@@ -1532,7 +1532,7 @@ function cargarCSV(input){
       /* Actualizar header */
       var tot=D.reduce(function(s,d){return s+(d.Total||0);},0);
       $i('hReg').textContent=D.length.toLocaleString();
-      $i('hTot').textContent='$'+tot.toFixed(2);
+      var _hTot=$i('hTot');if(_hTot)_hTot.textContent='$'+tot.toFixed(2);
 
       /* Inferir rango de fechas para el subtítulo */
       var fechas=D.map(function(d){return pF(d.Fecha);}).filter(Boolean);
