@@ -70,6 +70,45 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
 .btot{background:linear-gradient(135deg,var(--ok),#1d6f41);padding:18px;border-radius:12px;color:white;text-align:center;grid-column:1/-1}
 .btot-v{font-size:32px;font-weight:900;margin-top:4px}
 @media(max-width:600px){.bg{grid-template-columns:1fr}}
+/* ── CORTE ── */
+.corte-hero{background:linear-gradient(135deg,var(--pr),#5a2a0a);border-radius:14px;padding:22px 26px;color:white;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;box-shadow:0 4px 20px rgba(139,69,19,.25)}
+.corte-hero-titulo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;opacity:.8;margin-bottom:4px}
+.corte-hero-monto{font-size:42px;font-weight:900;color:var(--ac);line-height:1}
+.corte-hero-periodo{font-size:12px;opacity:.75;margin-top:5px}
+.corte-hero-right{text-align:right}
+.corte-var{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:5px 11px;border-radius:20px;margin-top:6px}
+.corte-var.pos{background:rgba(45,134,89,.35);color:#a0ffcc}
+.corte-var.neg{background:rgba(220,53,69,.35);color:#ffb3ba}
+.corte-var.neu{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8)}
+.corte-kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.corte-kcard{background:white;padding:16px;border-radius:12px;border-top:3px solid var(--pr);box-shadow:0 2px 8px rgba(139,69,19,.08);position:relative}
+.corte-kcard.ac{border-top-color:var(--ac)}
+.corte-kcard.ok{border-top-color:var(--ok)}
+.corte-kl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--tl);font-weight:600;margin-bottom:6px}
+.corte-kv{font-size:24px;font-weight:900;color:var(--pr)}
+.corte-kcard.ac .corte-kv{color:#9a7a00}
+.corte-kcard.ok .corte-kv{color:var(--ok)}
+.corte-ksub{font-size:11px;color:var(--tl);margin-top:3px}
+.corte-pago-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.corte-pago-card{background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(139,69,19,.08);border-left:4px solid var(--pr)}
+.corte-pago-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tl);margin-bottom:6px}
+.corte-pago-monto{font-size:22px;font-weight:900;color:var(--pr)}
+.corte-pago-pct{font-size:12px;color:var(--tl);margin-top:2px}
+.corte-pago-bar{height:5px;background:#E8DCC8;border-radius:3px;margin-top:8px;overflow:hidden}
+.corte-pago-bar-f{height:100%;border-radius:3px;background:var(--pr)}
+.corte-chart-wrap{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px rgba(139,69,19,.08);margin-bottom:16px}
+.corte-chart-title{font-size:13px;font-weight:700;text-transform:uppercase;color:var(--td);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.corte-chart-h{position:relative;height:220px}
+.corte-hist-tabla{width:100%;border-collapse:collapse;font-size:12px}
+.corte-hist-tabla th{background:var(--cr);color:var(--tl);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;font-weight:700}
+.corte-hist-tabla td{padding:8px 10px;border-bottom:1px solid #f0e8dc;color:var(--td)}
+.corte-hist-tabla tr:last-child td{border-bottom:none}
+.corte-hist-tabla tr.corte-actual-row td{background:linear-gradient(90deg,rgba(139,69,19,.07),transparent);font-weight:700;color:var(--pr)}
+.corte-var-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px}
+.corte-var-chip.pos{background:#e6f9ee;color:#1a7a45}
+.corte-var-chip.neg{background:#fde8ea;color:#c0392b}
+.corte-var-chip.neu{background:#f0ece8;color:var(--tl)}
+@media(max-width:600px){.corte-hero{flex-direction:column}.corte-hero-right{text-align:left}}
 </style>
 </head>
 <body>
@@ -105,14 +144,20 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
 @keyframes spulse{from{opacity:.6}to{opacity:1}}
 </style>
 <div class="tabs">
-  <button class="tab on" onclick="ST(event,'res')">&#128202; Resumen</button>
+  <button class="tab on" onclick="ST(event,'corte')">&#x1F4CB; Corte actual</button>
+  <button class="tab" onclick="ST(event,'res')">&#128202; Resumen</button>
   <button class="tab" onclick="ST(event,'cli')">&#128101; Clientes</button>
   <button class="tab" onclick="ST(event,'pro')">&#127856; Productos</button>
   <button class="tab" onclick="ST(event,'pag')">&#128179; Pagos</button>
 </div>
 
+<!-- CORTE ACTUAL -->
+<div id="corte" class="pane on">
+  <div id="corteC"></div>
+</div>
+
 <!-- RESUMEN -->
-<div id="res" class="pane on">
+<div id="res" class="pane">
   <div class="filters">
     <div class="fg"><span class="fl">Fecha inicio</span>
       <input id="rDesde" type="date" onchange="fRes()"></div>
@@ -476,18 +521,237 @@ window.addEventListener('load',function(){
     });
   });
   actualizarHeader();
-  fRes();
+  fCorte();
   /* Auto-cargar desde Supabase al iniciar */
-  setTimeout(cargarDesdeSupabase, 800);
+  setTimeout(function(){ cargarDesdeSupabase(); }, 800);
 });
 
 function ST(e,id){
   document.querySelectorAll('.pane').forEach(function(el){el.classList.remove('on');});
   document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('on');});
   $i(id).classList.add('on');e.target.classList.add('on');
+  if(id==='corte')fCorte();
+  if(id==='res')fRes();
   if(id==='cli')fCli();
   if(id==='pro')fPro();
   if(id==='pag')fPag();
+}
+
+/* ═══════════════════════════════════════════════════════
+   CORTE QUINCENAL
+   Cortes: día 25→día 9 del mes siguiente  y  día 10→día 24
+   ═══════════════════════════════════════════════════════ */
+function getCorteLimits(ref){
+  /* ref: Date de referencia (hoy por defecto).
+     Devuelve {desde, hasta} en formato 'YYYY-MM-DD' para el corte que contiene ref */
+  var d=ref||new Date();
+  var dia=d.getDate(),mes=d.getMonth(),anio=d.getFullYear();
+  var desde,hasta;
+  if(dia>=10&&dia<=24){
+    // Corte A: 10 → 24 del mes actual
+    desde=new Date(anio,mes,10);
+    hasta=new Date(anio,mes,24);
+  } else if(dia>=25){
+    // Corte B: 25 del mes actual → 9 del mes siguiente
+    desde=new Date(anio,mes,25);
+    hasta=new Date(anio,mes+1,9);
+  } else {
+    // día 1-9: corte que empezó el 25 del mes anterior
+    desde=new Date(anio,mes-1,25);
+    hasta=new Date(anio,mes,9);
+  }
+  function fmt(dt){return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+  return{desde:fmt(desde),hasta:fmt(hasta)};
+}
+
+function getUltimosCortes(n){
+  /* Genera los últimos n cortes hacia atrás desde hoy */
+  var cortes=[],ref=new Date();
+  for(var i=0;i<n+2;i++){
+    var c=getCorteLimits(ref);
+    // Evitar duplicados
+    if(!cortes.length||cortes[cortes.length-1].desde!==c.desde){
+      cortes.push(c);
+    }
+    if(cortes.length>=n)break;
+    // Ir al día anterior al inicio del corte actual
+    var prev=new Date(c.desde);
+    prev.setDate(prev.getDate()-1);
+    ref=prev;
+  }
+  return cortes; // índice 0 = más reciente
+}
+
+function getDatosCorte(c){
+  var dD=new Date(c.desde+'T00:00:00'),dH=new Date(c.hasta+'T23:59:59');
+  return D.filter(function(d){var f=pF(d.Fecha);return f>=dD&&f<=dH;});
+}
+
+function labelCorte(c){
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function fmt(s){var p=s.split('-');return parseInt(p[2])+' '+meses[parseInt(p[1])-1];}
+  return fmt(c.desde)+' – '+fmt(c.hasta);
+}
+
+var _chartCorteComp=null;
+
+function fCorte(){
+  var cortes=getUltimosCortes(11); // 0=actual, 1-10=histórico
+  var corteActual=cortes[0];
+  var corteAnterior=cortes[1]||null;
+  var datosActual=getDatosCorte(corteActual);
+  var datosAnterior=corteAnterior?getDatosCorte(corteAnterior):[];
+
+  var totActual=datosActual.reduce(function(s,d){return s+(d.Total||0);},0);
+  var cantActual=datosActual.length;
+  var promActual=cantActual?totActual/cantActual:0;
+  var totAnterior=datosAnterior.reduce(function(s,d){return s+(d.Total||0);},0);
+
+  // Varianza vs corte anterior
+  var varPct=totAnterior>0?((totActual-totAnterior)/totAnterior*100):null;
+  var varMonto=totActual-totAnterior;
+  var varCls=varPct===null?'neu':(varPct>=0?'pos':'neg');
+  var varIcon=varPct===null?'–':(varPct>=0?'▲':'▼');
+  var varTxt=varPct===null?'Sin corte anterior':(varIcon+' '+(varPct>=0?'+':'')+varPct.toFixed(1)+'% vs corte anterior');
+
+  // Tipos de pago del corte actual
+  var vPg={},cPg={};
+  datosActual.forEach(function(d){var p=d.Pago||'?';vPg[p]=(vPg[p]||0)+(d.Total||0);cPg[p]=(cPg[p]||0)+1;});
+  var totPg=Object.values(vPg).reduce(function(a,b){return a+b;},0);
+  var pagosCols={'Cash':'#8B4513','Tarjeta':'#DAA520','Card':'#DAA520','Descuento':'#2D8659'};
+
+  // Bebidas del corte
+  var bebidasActual=0;
+  datosActual.forEach(function(d){(d.Items||[]).forEach(function(it){if(it.tipo==='bebida')bebidasActual+=it.cant;});});
+
+  // Histórico de 10 cortes (índices 1..10)
+  var historicoCortes=cortes.slice(1,11);
+  var historicoStats=historicoCortes.map(function(c){
+    var dat=getDatosCorte(c);
+    var tot=dat.reduce(function(s,d){return s+(d.Total||0);},0);
+    var cnt=dat.length;
+    return{label:labelCorte(c),total:tot,cant:cnt,desde:c.desde,hasta:c.hasta};
+  });
+
+  // Varianza de cada corte histórico vs su anterior
+  var todoCortes=[{label:labelCorte(corteActual),total:totActual,cant:cantActual,desde:corteActual.desde,hasta:corteActual.hasta,esActual:true}].concat(
+    historicoStats.map(function(s){return Object.assign({},s,{esActual:false});})
+  );
+
+  /* ── BUILD HTML ── */
+  var h='';
+
+  // Hero del corte actual
+  var varMontoStr=(varMonto>=0?'+':'')+' $'+Math.abs(varMonto).toFixed(2);
+  h+='<div class="corte-hero">'
+    +'<div>'
+    +'<div class="corte-hero-titulo">&#x1F4CB; Corte actual</div>'
+    +'<div class="corte-hero-monto">$'+totActual.toFixed(2)+'</div>'
+    +'<div class="corte-hero-periodo">'+labelCorte(corteActual)+'</div>'
+    +'</div>'
+    +'<div class="corte-hero-right">'
+    +'<div class="corte-hero-titulo">Varianza vs corte anterior</div>'
+    +'<div class="corte-var '+varCls+'">'+varTxt+'</div>'
+    +(varPct!==null?'<div style="font-size:12px;opacity:.8;margin-top:5px">'+varMontoStr+'</div>':'')
+    +'<div style="font-size:11px;opacity:.6;margin-top:8px">Corte ant.: $'+totAnterior.toFixed(2)+'<br>'+(corteAnterior?labelCorte(corteAnterior):'–')+'</div>'
+    +'</div>'
+    +'</div>';
+
+  // KPIs del corte
+  h+='<div class="corte-kgrid">'
+    +'<div class="corte-kcard"><div class="corte-kl">Transacciones</div><div class="corte-kv">'+cantActual+'</div><div class="corte-ksub">en el corte</div></div>'
+    +'<div class="corte-kcard ac"><div class="corte-kl">Ticket promedio</div><div class="corte-kv">$'+promActual.toFixed(2)+'</div><div class="corte-ksub">por venta</div></div>'
+    +'<div class="corte-kcard ok"><div class="corte-kl">Bebidas vendidas</div><div class="corte-kv">'+bebidasActual+'</div><div class="corte-ksub">unidades</div></div>'
+    +'</div>';
+
+  // Tipos de pago del corte actual
+  h+='<div class="corte-chart-wrap"><div class="corte-chart-title">Formas de pago — corte actual</div>';
+  h+='<div class="corte-pago-grid">';
+  var pgEntries=Object.entries(vPg).sort(function(a,b){return b[1]-a[1];});
+  pgEntries.forEach(function(e){
+    var label=e[0],val=e[1],pct=totPg?val/totPg*100:0;
+    var col=pagosCols[label]||'#8B4513';
+    h+='<div class="corte-pago-card" style="border-left-color:'+col+'">'
+      +'<div class="corte-pago-label">'+esc(label)+'</div>'
+      +'<div class="corte-pago-monto" style="color:'+col+'">$'+val.toFixed(2)+'</div>'
+      +'<div class="corte-pago-pct">'+pct.toFixed(1)+'% — '+cPg[label]+' transacciones</div>'
+      +'<div class="corte-pago-bar"><div class="corte-pago-bar-f" style="width:'+pct+'%;background:'+col+'"></div></div>'
+      +'</div>';
+  });
+  h+='</div></div>';
+
+  // Gráfica comparativa + tabla de los últimos 10 cortes
+  h+='<div class="corte-chart-wrap">'
+    +'<div class="corte-chart-title"><span>&#x1F4CA; Últimos 10 cortes</span><span style="font-size:11px;color:var(--tl);font-weight:normal">comparativo de ventas</span></div>'
+    +'<div class="corte-chart-h"><canvas id="chCorteComp"></canvas></div>'
+    +'</div>';
+
+  // Tabla de historial con varianza
+  h+='<div class="corte-chart-wrap"><div class="corte-chart-title">Historial de cortes</div>'
+    +'<div style="overflow-x:auto"><table class="corte-hist-tabla">'
+    +'<thead><tr><th>Corte</th><th>Venta</th><th>Tx</th><th>Ticket prom.</th><th>Varianza</th></tr></thead><tbody>';
+
+  for(var i=0;i<todoCortes.length;i++){
+    var row=todoCortes[i];
+    var rowAnterior=todoCortes[i+1]||null;
+    var vp=rowAnterior&&rowAnterior.total>0?((row.total-rowAnterior.total)/rowAnterior.total*100):null;
+    var vm=rowAnterior?(row.total-rowAnterior.total):null;
+    var vchip='<span class="corte-var-chip neu">–</span>';
+    if(vp!==null){
+      var vcls=vp>=0?'pos':'neg';
+      var vico=vp>=0?'▲':'▼';
+      vchip='<span class="corte-var-chip '+vcls+'">'+vico+' '+(vp>=0?'+':'')+vp.toFixed(1)+'%</span>';
+      if(vm!==null) vchip+='<div style="font-size:10px;color:var(--tl);margin-top:2px">'+(vm>=0?'+':'')+' $'+Math.abs(vm).toFixed(2)+'</div>';
+    }
+    var prom2=row.cant?row.total/row.cant:0;
+    h+='<tr'+(row.esActual?' class="corte-actual-row"':'')+'>'
+      +'<td>'+(row.esActual?'<strong>':'')+'&#x1F4CD; '+esc(row.label)+(row.esActual?' <span style="font-size:10px;background:var(--ac);color:var(--td);padding:1px 5px;border-radius:4px;margin-left:4px">actual</span></strong>':'')+'</td>'
+      +'<td>$'+row.total.toFixed(2)+'</td>'
+      +'<td>'+row.cant+'</td>'
+      +'<td>$'+prom2.toFixed(2)+'</td>'
+      +'<td>'+vchip+'</td>'
+      +'</tr>';
+  }
+  h+='</tbody></table></div></div>';
+
+  $i('corteC').innerHTML=h;
+
+  // Renderizar gráfica
+  setTimeout(function(){
+    var ctx=$i('chCorteComp');if(!ctx)return;
+    if(_chartCorteComp)_chartCorteComp.destroy();
+    // Los datos para la gráfica: cortes del más viejo al más nuevo
+    var labelsG=[],datosG=[],coloresG=[];
+    for(var j=todoCortes.length-1;j>=0;j--){
+      labelsG.push(todoCortes[j].label);
+      datosG.push(parseFloat(todoCortes[j].total.toFixed(2)));
+      coloresG.push(todoCortes[j].esActual?'#DAA520':'rgba(139,69,19,0.65)');
+    }
+    _chartCorteComp=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:labelsG,
+        datasets:[{
+          label:'Venta del corte ($)',
+          data:datosG,
+          backgroundColor:coloresG,
+          borderRadius:5,
+          borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:function(ctx){return ' $'+ctx.parsed.y.toFixed(2);}}}
+        },
+        scales:{
+          x:{ticks:{font:{size:9},maxRotation:45}},
+          y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v.toFixed(0);}}}
+        }
+      }
+    });
+  },80);
 }
 
 /* RESUMEN */
