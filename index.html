@@ -378,6 +378,8 @@ async function cargarDesdeSupabase(){
     /* Siempre refrescar la vista activa después de cargar desde DB */
     aplicarFiltroCorteActual('rDesde','rHasta');
     aplicarFiltroCorteActual('pgDesde','pgHasta');
+    aplicarFiltroCorteActual('cDesde','cHasta');
+    aplicarFiltroCorteActual('pDesde','pHasta');
     var pane = document.querySelector('.pane.on');
     if(pane){ var id=pane.id; if(id==='corte')fCorte(); else if(id==='res')fRes(); else if(id==='cli')fCli(); else if(id==='pro')fPro(); else if(id==='pag')fPag(); }
     else fCorte();
@@ -532,8 +534,8 @@ function ST(e,id){
   $i(id).classList.add('on');e.target.classList.add('on');
   if(id==='corte')fCorte();
   if(id==='res'){aplicarFiltroCorteActual('rDesde','rHasta');fRes();}
-  if(id==='cli')fCli();
-  if(id==='pro')fPro();
+  if(id==='cli'){aplicarFiltroCorteActual('cDesde','cHasta');fCli();}
+  if(id==='pro'){aplicarFiltroCorteActual('pDesde','pHasta');fPro();}
   if(id==='pag'){aplicarFiltroCorteActual('pgDesde','pgHasta');fPag();}
 }
 
