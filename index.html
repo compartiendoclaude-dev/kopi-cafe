@@ -120,7 +120,6 @@ select:focus,input:focus{outline:none;border-color:var(--pr)}
   </div>
   <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
     <div class="hstat"><div class="hstat-v" id="hReg">0</div><div class="hstat-l">Registros</div></div>
-    <div class="hstat"><div class="hstat-v" id="hTot">$0</div><div class="hstat-l">Venta total</div></div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <label for="csvInput" style="position:relative;overflow:hidden;display:inline-block;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.6);color:white;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&#x1F4C2; Cargar CSV
         <input type="file" id="csvInput" accept=".csv,.txt,text/csv,text/comma-separated-values,application/csv,application/vnd.ms-excel,text/plain,*/*" onchange="cargarCSV(this)" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0">
@@ -376,10 +375,10 @@ async function cargarDesdeSupabase(){
 
     actualizarHeader();
     setSyncUI('ok', nuevos+' nuevos de DB');
-    if(nuevos > 0){
-      var pane = document.querySelector('.pane.on');
-      if(pane){ var id=pane.id; if(id==='res')fRes(); else if(id==='cli')fCli(); else if(id==='pro')fPro(); else if(id==='pag')fPag(); }
-    }
+    /* Siempre refrescar la vista activa después de cargar desde DB */
+    var pane = document.querySelector('.pane.on');
+    if(pane){ var id=pane.id; if(id==='corte')fCorte(); else if(id==='res')fRes(); else if(id==='cli')fCli(); else if(id==='pro')fPro(); else if(id==='pag')fPag(); }
+    else fCorte();
   } catch(e){
     setSyncUI('error', e.message);
     console.error('Supabase load error', e);
@@ -521,8 +520,7 @@ window.addEventListener('load',function(){
     });
   });
   actualizarHeader();
-  fCorte();
-  /* Auto-cargar desde Supabase al iniciar */
+  /* Auto-cargar desde Supabase al iniciar — fCorte() se llama dentro de cargarDesdeSupabase() al terminar */
   setTimeout(function(){ cargarDesdeSupabase(); }, 800);
 });
 
@@ -1493,10 +1491,12 @@ function cargarCSV(input){
       var paneActivo=document.querySelector('.pane.on');
       if(paneActivo){
         var id=paneActivo.id;
-        if(id==='res')fRes();
+        if(id==='corte')fCorte();
+        else if(id==='res')fRes();
         else if(id==='cli')fCli();
         else if(id==='pro')fPro();
         else if(id==='pag')fPag();
+        if(id!=='corte')fCorte(); // siempre actualizar corte
       }
       input.value='';
     } catch(err){
